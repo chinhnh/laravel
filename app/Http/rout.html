@@ -1,0 +1,188 @@
+<?php
+
+/*
+|--------------------------------------------------------------------------
+| Application Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register all of the routes for an application.
+| It's a breeze. Simply tell Laravel the URIs it should respond to
+| and give it the controller to call when that URI is requested.
+|
+*/
+
+Route::get('/', 'WelcomeController@index');
+
+Route::get('home', 'HomeController@index');
+
+Route::controllers([
+'auth' => 'Auth\AuthController',
+'password' => 'Auth\PasswordController',
+]);
+
+Route::get('/array',['name'=>'get.array','uses'=>'HomeController@showWelcome']);
+
+Route::get('/string','HomeController@showWelcome');
+// name route
+//Route::get('/get-san-pham/{ten}/{gia}',array ('as'=>'product','uses'=>'ProductController@view'));
+
+
+//url
+//$url=URL::route("product",array('san-pham-1','100000'));
+//echo "<a href='$url'>chi tiet</a>";
+/*
+Router::get('/loi',function(){
+echo "loi";
+});
+Route::get('/get_sp/{name}/{ma}',function($name,$ma){
+echo "san pham $name id $ma"; 
+});
+Route::filter('checklogin',function (){
+if(Sesion::get('login')==1){
+return Redirect::to("/dangnhap")
+}
+
+
+});
+Route::get('/them-san-pham', array("before"=>"checkLogin","uses"=>"ProductController@store"));
+Route::filter('checkid',function($route,$request,$value){
+if($value<0){
+echo "null";
+}
+});
+Route::get('/check-id',array("before"=>"checkid:-1","uses"=>"DemoController@view"));
+*/
+Route::get('/dangnhap', function(){
+echo 'Day trang dang nhap';
+});
+
+
+Route::get('/check-id', array("before"=>"checkId:-1","uses"=>"DemoController@view"));
+
+
+
+
+
+Route::filter("checkLogin", function(){
+if(Session::get('login')!=1)
+{  
+return Redirect::to("/dangnhap");
+}
+});
+Route::get('/them-san-pham', array("before"=>"checkLogin","uses"=>"ProductController@store")); 
+
+Route::filter("checkId", function($route,$request,$value){
+//xử lý dữ liệu
+if($value <= 0)
+{
+//tạm thời mình chỉ echo ra thôi.
+echo 'Id khong hop le';
+}
+});
+Route::group(array("before"=>"checkLogin"), function(){
+Route::get('/them-san-pham',array("uses"=>"ProductController@add"));
+Route::get('/sua-san-pham',array("uses"=>"ProductController@update"));
+Route::get('/xoa-san-pham',array("uses"=>"ProductController@remove"));
+Route::get('/sua-danh-muc',array("uses"=>"ProductController@update"));
+});
+Route::get('/show',array("uses"=>"ProductController@show"));
+
+
+Route::get('/san-pham/{name}/{id}', function($name, $id)
+{
+//echo 'Ban dang xem san pham '.$name.' có ID = '.$id;
+return view("add")->with([
+'name' => $name,
+'gia' => $id
+]);
+});
+Route::controller('san-pham','ProductController');
+//Route::get('/san-pham',array('uses'=>'ProductController@test'));
+Route::get('/testview',function(){
+return view("testview");
+
+});
+Route::get('callview',function(){
+$hoten="chinh";
+return view('callview',compact('hoten'));
+//return redirect()->route("dinh-danh");
+});
+Route::get('/trang-dinh-danh',['as'=>'dinh-danh',function(){
+
+return "trang dinh danh";
+}]);
+
+Route::get('/get-layout',function(){
+if(view()->exists('layout.sub.detail')){
+return view("layout.sub.detail");}
+else{
+return "khoong cos view";
+}
+});
+View::share('title','lập trình laravel');
+View::composer('layout.sub.detail',function($view){
+return $view->with('thongtin','nguyenhuuchinh');
+});
+Route::get('get-blade',function(){
+return view("views.layout");
+});
+Route::get('get-url',function(){
+//return URL::full();
+//return URL::asset('css/style.css',true);
+//return asset('template/css/mystyle.css',true);
+return URL::to('/san-pham',['san_pham_1','100000000'],true);
+
+});
+Route::get('/get-table',function(){
+$data= DB::table('product')->get();
+echo"<pre>";
+print_r($data);
+echo "</pre>";
+});
+Route::get('/get-table2',function(){
+$data= DB::table('product')->select('ten')->get();
+echo"<pre>";
+print_r($data);
+echo "</pre>";
+});
+Route::get('/get-table3',function(){
+$data= DB::table('product')->where('id',1)->get();//->orWhere
+echo"<pre>";
+print_r($data);
+echo "</pre>";
+});
+Route::get('/get-table4',function(){
+$data= DB::table('product')->join('categori','product.cat_id','=','categori.cat_id')->where('cat_id',1)->get();//->orWhere
+echo"<pre>";
+print_r($data);
+echo "</pre>";
+});
+
+Route::get('/insetTable',function(){
+DB::table('product')->insert([
+'ten'=>'fsdf',
+'gia'=>423424,
+'cat_id'=>'1'
+]);
+return "success";
+});
+Route::get('/insetTable2',function(){
+DB::table('product')->insert([
+['ten'=>'fsdf1','gia'=>1,'cat_id'=>'1'],
+['ten'=>'fsdf2','gia'=>2,'cat_id'=>'4'],
+['ten'=>'fsdf3','gia'=>3,'cat_id'=>'2'],
+]);
+return "success";
+});
+Route::get('/deleteTable',function(){
+DB::table('product')->where('id',30)->delete();
+return "success";
+
+});
+Route::get('/getModel',function(){
+$data= App\Home::all()->toArray();
+echo"<pre>";
+print_r($data);
+echo "</pre>";
+});
+
